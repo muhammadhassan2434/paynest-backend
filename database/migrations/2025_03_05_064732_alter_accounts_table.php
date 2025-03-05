@@ -11,17 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transactions', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('accounts', function (Blueprint $table) {
+            $table->string('otp');
         });
     }
-
+    
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('transactions');
+        Schema::table('accounts', function (Blueprint $table) {
+            $table->string('otp');
+        });
     }
 };

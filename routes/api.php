@@ -12,6 +12,7 @@ Route::get('/user', function (Request $request) {
 Route::post('register', [AccountCreationController::class, 'register']);
 Route::post('verify/otp/{id}', [AccountCreationController::class, 'verifyOtp']);
 Route::post('account/register', [AccountCreationController::class, 'accountRegister']);
+Route::post('verify/phone/otp/{id}', [AccountCreationController::class, 'verifyPhoneOtp']);
 Route::post('user/login', [AccountCreationController::class, 'Userlogin'])->name('login');
 
 Route::middleware('auth:sanctum')->group(function () {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\TransactionSuccessJob;
 use App\Models\Account;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -132,6 +133,8 @@ class PaynestTransferController extends Controller
         $receiver->save();
 
         DB::commit();
+
+        dispatch(new TransactionSuccessJob($sender->user->first_name,$sender->user->email, $sender->phone, $receiver->user->first_name, $transaction->amount));
 
         return response()->json([
             'status' => true,

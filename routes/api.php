@@ -30,5 +30,8 @@ Route::post('validate/enteramount',[PaynestTransferController::class,'enterAmoun
 Route::post('paynest/transfer',[PaynestTransferController::class,'PaynestTransfer']);
 
 // bill reminders routes
-Route::get('billreminders',[BillReminderController::class,'index']);
+Route::get('billreminders/{id}',[BillReminderController::class,'index']);
 Route::post('store/billreminder',[BillReminderController::class,'store']);
+Route::get('edit/billreminder/{id}',[BillReminderController::class,'edit']);
+Route::put('update/billreminder/{id}',[BillReminderController::class,'update']);
+Route::get('delete/billreminder/{id}',[BillReminderController::class,'delete']);

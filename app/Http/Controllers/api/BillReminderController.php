@@ -122,6 +122,7 @@ class BillReminderController extends Controller
             ], 404);
         }
         $bill_reminder->delete();
+        Cache::forget('bill_reminders:index');
 
         return response()->json([
             'status' => true,

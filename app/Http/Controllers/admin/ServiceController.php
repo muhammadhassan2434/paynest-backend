@@ -5,6 +5,7 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
 class ServiceController extends Controller
@@ -54,84 +55,88 @@ class ServiceController extends Controller
             $service->logo = $filePath;
             $service->status = $request->status;
             $service->save();
+
+            // cache the memory
+            Cache::forget('services:index');
+
             return redirect()->route('services.index')->with('success', 'Service created successfully');
         }
-
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-    }
-    
+    public function show(string $id) {}
+
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
     {
         $service = Service::find($id);
-        return view('admin.services.edit',compact('service'));
+        return view('admin.services.edit', compact('service'));
     }
 
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id)
-{
-    $service = Service::findOrFail($id);
+    {
+        $service = Service::findOrFail($id);
 
-    $validator = Validator::make($request->all(), [
-        'name' => 'required',
-        'status' => 'required',
-        'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
-    ]);
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'status' => 'required',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        ]);
 
-    if ($validator->fails()) {
-        return redirect()->back()->withErrors($validator)->withInput();
-    }
-
-    // Handle logo update
-    if ($request->hasFile('logo')) {
-        // Remove old image if exists
-        if ($service->logo && file_exists(public_path($service->logo))) {
-            unlink(public_path($service->logo));
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        // Upload new image
-        $file = $request->file('logo');
-        $filename = time() . '_' . $file->getClientOriginalName();
-        $filePath = 'uploads/services/' . $filename;
-        $file->move(public_path('uploads/services/'), $filename);
+        // Handle logo update
+        if ($request->hasFile('logo')) {
+            // Remove old image if exists
+            if ($service->logo && file_exists(public_path($service->logo))) {
+                unlink(public_path($service->logo));
+            }
 
-        // Update service logo
-        $service->logo = $filePath;
+            // Upload new image
+            $file = $request->file('logo');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $filePath = 'uploads/services/' . $filename;
+            $file->move(public_path('uploads/services/'), $filename);
+
+            // Update service logo
+            $service->logo = $filePath;
+        }
+
+        // Update other fields
+        $service->name = $request->name;
+        $service->status = $request->status;
+        $service->save();
+        // cache the memory
+        Cache::forget('services:index');
+
+        return redirect()->route('services.index')->with('success', 'Service updated successfully');
     }
-
-    // Update other fields
-    $service->name = $request->name;
-    $service->status = $request->status;
-    $service->save();
-
-    return redirect()->route('services.index')->with('success', 'Service updated successfully');
-}
 
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-{
-    $service = Service::findOrFail($id);
+    {
+        $service = Service::findOrFail($id);
 
-    if ($service->logo && file_exists(public_path($service->logo))) {
-        unlink(public_path($service->logo));
+        if ($service->logo && file_exists(public_path($service->logo))) {
+            unlink(public_path($service->logo));
+        }
+
+        $service->delete();
+        // cache the memory
+        Cache::forget('services:index');
+
+        return redirect()->route('services.index')->with('success', 'Service deleted successfully');
     }
-
-    $service->delete();
-
-    return redirect()->route('services.index')->with('success', 'Service deleted successfully');
-}
-
 }

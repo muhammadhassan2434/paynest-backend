@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Models\ServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
 class ServiceProviderController extends Controller
@@ -60,6 +61,10 @@ class ServiceProviderController extends Controller
             $service->logo = $filePath;
             $service->status = $request->status;
             $service->save();
+
+            // cache the memory
+            Cache::forget('serviceprovider:index');
+
             return redirect()->route('provider.index')->with('success', 'Service created successfully');
         }
     }
@@ -119,6 +124,8 @@ class ServiceProviderController extends Controller
         $service->name = $request->name;
         $service->status = $request->status;
         $service->save();
+         // cache the memory
+         Cache::forget('serviceprovider:index');
     
         return redirect()->route('provider.index')->with('success', 'Service provider updated successfully');
     }
@@ -135,6 +142,9 @@ class ServiceProviderController extends Controller
         }
 
         $provider->delete();
+
+         // cache the memory
+         Cache::forget('serviceprovider:index');
 
     return redirect()->route('provider.index')->with('success', 'Service provider deleted successfully');
     }

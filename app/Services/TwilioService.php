@@ -10,10 +10,8 @@ class TwilioService
 
     public function __construct()
 {
-    $sid = env('TWILIO_SID');
-    $token = env('TWILIO_AUTH_TOKEN');
-
-    // dd($sid, $token); // Debugging
+    $sid = config('services.twilio.sid');
+    $token = config('services.twilio.token');
 
     $this->twilio = new Client($sid, $token);
 }

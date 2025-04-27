@@ -11,9 +11,7 @@ use Illuminate\Support\Facades\Cache;
 class FetchServiceController extends Controller
 {
     public function index(){
-        $services = Cache::remember('services:index', now()->addMinutes(10), function(){
-            return Service::all();
-        });
+        $services = Service::where('status', 'active')->get();
 
         return response()->json($services);
     }

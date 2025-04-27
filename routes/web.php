@@ -5,6 +5,7 @@ use App\Http\Controllers\admin\dashboardController;
 use App\Http\Controllers\admin\ServiceController;
 use App\Http\Controllers\admin\ServiceProviderController;
 use App\Http\Middleware\AdminAuthMiddleware;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -26,4 +27,12 @@ Route::middleware(AdminAuthMiddleware::class)->group(function () {
 
     // service providers routes
     Route::resource('service/provider', ServiceProviderController::class);
+});
+Route::get('/clear-cache', function() {
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('route:clear');
+    Artisan::call('optimize:clear');
+    Artisan::call('view:clear');
+    return "Cache Cleared!";
 });

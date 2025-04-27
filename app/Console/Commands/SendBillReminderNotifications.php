@@ -34,6 +34,8 @@ class SendBillReminderNotifications extends Command
 
         if ($reminder && $reminder->user) {
             $reminder->user->notify(new BillReminderNotification($reminder));
+            $reminder->is_notified = true; 
+            $reminder->save();
             $this->info("✅ Test notification sent to {$reminder->user->email}");
         } else {
             $this->error('❌ No reminder or user found for testing.');
@@ -46,7 +48,7 @@ class SendBillReminderNotifications extends Command
     $today = Carbon::today()->format('Y-m-d');
     $tomorrow = Carbon::tomorrow()->format('Y-m-d');
 
-    $reminders = BillReminder::whereIn('due_date', [$today, $tomorrow])->get();
+    $reminders = BillReminder::whereIn('due_date', [$today, $tomorrow])->where('is_notified',false)->get();
 
     $count = 0;
 
@@ -55,6 +57,8 @@ class SendBillReminderNotifications extends Command
 
         if ($user) {
             $user->notify(new BillReminderNotification($reminder));
+            $reminder->is_notified = true; 
+            $reminder->save();
             $count++;
         }
     }

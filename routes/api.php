@@ -14,7 +14,7 @@ Route::get('/user', function (Request $request) {
 
 // account registration routes
 Route::post('register', [AccountCreationController::class, 'register']);
-Route::post('verify/otp/{id}', [AccountCreationController::class, 'verifyOtp']);
+Route::post('verify/otp', [AccountCreationController::class, 'verifyOtp']);
 Route::post('account/register', [AccountCreationController::class, 'accountRegister']);
 Route::post('verify/phone/otp/{id}', [AccountCreationController::class, 'verifyPhoneOtp']);
 Route::post('user/login', [AccountCreationController::class, 'Userlogin'])->name('login');
@@ -22,28 +22,29 @@ Route::post('user/login', [AccountCreationController::class, 'Userlogin'])->name
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('account/info/{id}', [AccountCreationController::class, 'accountInfo']);
     
-});
-
-// fetch services and service providers
-Route::get('services',[FetchServiceController::class,'index']);
-Route::get('service/providers',[FetchServiceController::class,'serviceProvider']);
-
-
-// paynest transfer routes
-Route::post('validate/paynest/number',[PaynestTransferController::class,'ValidatePaynestNumber']);
-Route::post('validate/enteramount',[PaynestTransferController::class,'enterAmount']);
-Route::post('paynest/transfer',[PaynestTransferController::class,'PaynestTransfer']);
-
-// bill reminders routes
-Route::get('billreminders/{id}',[BillReminderController::class,'index']);
-Route::post('store/billreminder',[BillReminderController::class,'store']);
-Route::get('edit/billreminder/{id}',[BillReminderController::class,'edit']);
-Route::put('update/billreminder/{id}',[BillReminderController::class,'update']);
-Route::get('delete/billreminder/{id}',[BillReminderController::class,'delete']);
-
-Route::prefix('payment-schedules')->group(function () {
-    Route::post('/', [ShedulePaymentController::class, 'store']); // create
-    Route::post('/refund/{id}', [ShedulePaymentController::class, 'refundOnly']); // refund only
-    Route::post('/cancel/{id}', [ShedulePaymentController::class, 'cancel']); // cancel
-    Route::post('/refund-back/{id}', [ShedulePaymentController::class, 'refundBack']); // manual fund again
+    // fetch services and service providers
+    Route::get('services',[FetchServiceController::class,'index']);
+    Route::get('service/providers',[FetchServiceController::class,'serviceProvider']);
+    
+    
+    // paynest transfer routes
+    Route::post('validate/paynest/number',[PaynestTransferController::class,'ValidatePaynestNumber']);
+    Route::post('validate/enteramount',[PaynestTransferController::class,'enterAmount']);
+    Route::post('paynest/transfer',[PaynestTransferController::class,'PaynestTransfer']);
+    
+    // bill reminders routes
+    Route::get('billreminders',[BillReminderController::class,'index']);
+    Route::get('pending/billreminders',[BillReminderController::class,'pendingbillreminders']);
+    Route::get('success/billreminders',[BillReminderController::class,'successbillreminders']);
+    Route::post('store/billreminder',[BillReminderController::class,'store']);
+    Route::get('edit/billreminder/{id}',[BillReminderController::class,'edit']);
+    Route::put('update/billreminder/{id}',[BillReminderController::class,'update']);
+    Route::get('delete/billreminder/{id}',[BillReminderController::class,'delete']);
+    
+    Route::prefix('payment-schedules')->group(function () {
+        Route::post('/', [ShedulePaymentController::class, 'store']); // create
+        Route::post('/refund/{id}', [ShedulePaymentController::class, 'refundOnly']); // refund only
+        Route::post('/cancel/{id}', [ShedulePaymentController::class, 'cancel']); // cancel
+        Route::post('/refund-back/{id}', [ShedulePaymentController::class, 'refundBack']); // manual fund again
+    });
 });

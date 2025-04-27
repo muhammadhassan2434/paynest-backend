@@ -36,7 +36,8 @@ class AccountCreationController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'User Already Exist',
-                'otp' => 'OTP sent successfully! Plesase Verify'
+                'otp' => 'OTP sent successfully! Plesase Verify',
+                'user_id' => $user->id
             ]);
         }
 
@@ -83,10 +84,10 @@ class AccountCreationController extends Controller
         ]);
     }
 
-    public function verifyOtp(Request $request, $id)
+    public function verifyOtp(Request $request)
     {
-        $user = User::where('id', $id)->first();
         $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
             'otp' => 'required',
         ]);
 
@@ -98,9 +99,13 @@ class AccountCreationController extends Controller
         }
 
 
+        $user = User::find($request->user_id);
+
+
 
         if ($user->otp == $request->otp) {
             $user->status = 'active';
+            $user->otp = null;
             $user->save();
             return response()->json([
                 'status' => true,
@@ -154,13 +159,13 @@ class AccountCreationController extends Controller
         $otp = rand(1000, 9999);
         $account = new Account();
         $account->user_id = $request->user_id;
-        $account->paynest_id = 'paynest' . $request->paynest_id;
+        $account->paynest_id = 'paynest@' . $request->paynest_id;
         $account->phone = $request->phone;
         $account->gender = $request->gender;
         $account->address = $request->address;
         $account->otp = $otp;
         $account->balance = 10000.00;
-        $account->status = 'pending';
+        $account->status = 'active';
         $account->save();
 
         if ($account) {
@@ -223,46 +228,57 @@ class AccountCreationController extends Controller
 
 
     public function Userlogin(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => [
-                'required',
-                Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised()
-            ],
+{
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|email',
+        'password' => [
+            'required',
+            Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised()
+        ],
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'message' => $validator->errors()
         ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => $validator->errors()
-            ]);
-        }
-        $user = User::where('email', $request->email)->first();
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'User Not Found'
-            ]);
-        }
-
-
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-
-            if ($user->status != 'active') {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'User Not Verified'
-                ]);
-            }
-            $token = $user->createToken('auth_token')->plainTextToken;
-            return response()->json([
-                'status' => true,
-                'message' => 'Login Success',
-                'token' => $token,
-                'user_id' => $user->id,
-            ]);
-        }
     }
+
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user) {
+        return response()->json([
+            'status' => false,
+            'message' => 'User Not Found ! Enter Correct Email' 
+        ]);
+    }
+
+    if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        $account = Account::with('user')->where('user_id', $user->id)->get();
+
+        if ($user->status != 'active') {
+            return response()->json([
+                'status' => false,
+                'message' => 'User Not Verified'
+            ]);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+        return response()->json([
+            'status' => true,
+            'message' => 'Login Success',
+            'token' => $token,
+            'user_id' => $user->id,
+            'account' => $account,
+        ]);
+    }
+
+    return response()->json([
+        'status' => false,
+        'message' => 'Invalid credentials',
+    ]);
+}
+
 
 
     public function accountInfo($id)

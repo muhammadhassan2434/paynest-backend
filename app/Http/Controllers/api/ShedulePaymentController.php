@@ -11,6 +11,35 @@ use Illuminate\Support\Facades\Validator;
 
 class ShedulePaymentController extends Controller
 {
+
+    public function index(Request $request)
+    {
+        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->get();
+        return response()->json(['status' => true, 'schedulePayment' => $schedulePayment], 200);
+    }
+    public function executed(Request $request)
+    {
+        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->where('status', 'executed')->get();
+        return response()->json(['status' => true, 'schedulePayment' => $schedulePayment], 200);
+    }
+    public function cancelled(Request $request)
+    {
+        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->where('status', 'cancelled')->get();
+        return response()->json(['status' => true, 'schedulePayment' => $schedulePayment], 200);
+    }
+    public function failed(Request $request)
+    {
+        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->where('status', 'failed')->get();
+        return response()->json(['status' => true, 'schedulePayment' => $schedulePayment], 200);
+    }
+
+    public function redunded(Request $request)
+    {
+        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->where('status', 'scheduled')->where('is_funded', false)->get();
+        return response()->json(['status' => true, 'schedulePayment' => $schedulePayment], 200);
+    }
+
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -22,7 +51,6 @@ class ShedulePaymentController extends Controller
             'category'           => 'nullable|string|max:255',
             'reference_no'       => 'nullable|string|max:255',
             'receiver_name'      => 'nullable|string|max:255',
-            'receiver_contact'   => 'nullable|string|max:255',
             'receiver_account_no' => 'nullable|string|max:255',
             'receiver_bank'      => 'nullable|string|max:255',
             'note'               => 'nullable|string',
@@ -51,7 +79,6 @@ class ShedulePaymentController extends Controller
             'category'             => $request->category,
             'reference_no'         => $request->reference_no,
             'receiver_name'        => $request->receiver_name,
-            'receiver_contact'     => $request->receiver_contact,
             'receiver_account_no'  => $request->receiver_account_no,
             'receiver_bank'        => $request->receiver_bank,
             'note'                 => $request->note,

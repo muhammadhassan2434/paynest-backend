@@ -15,12 +15,12 @@ class PaymentSchedule extends Model
         'category',
         'reference_no',
         'receiver_name',
-        'receiver_contact',
         'receiver_account_no',
         'receiver_bank',
         'note',
         'is_funded',
         'status',
+        'transaction_id'
     ];
 
 
@@ -28,4 +28,9 @@ class PaymentSchedule extends Model
     {
         return $this->belongsTo(Account::class);
     }
-}
+
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction::class);
+    }
+    }

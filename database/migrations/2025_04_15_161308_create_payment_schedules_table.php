@@ -30,7 +30,6 @@ return new class extends Migration
         
             // Receiver info for transfers
             $table->string('receiver_name')->nullable();
-            $table->string('receiver_contact')->nullable();
             $table->string('receiver_account_no')->nullable();
             $table->string('receiver_bank')->nullable();
         

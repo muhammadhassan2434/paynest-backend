@@ -22,7 +22,7 @@ class BillPaymentController extends Controller
     public function failed(Request $request)
     {
         $user_id = $request->user_id;
-        $bills = BillPayment::where('user_id', $user_id)->where('status','!=','paid')->get();
+        $bills = BillPayment::where('user_id', $user_id)->where('status', '!=', 'paid')->get();
         return response()->json(['status' => true, 'bills' => $bills]);
     }
 
@@ -56,19 +56,18 @@ class BillPaymentController extends Controller
             return response()->json(['status' => false, 'message' => 'Bill not found'], 404);
         }
     }
-    
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
             'consumer_number' => 'required|string',
             'service_provider_id' => 'required',
-            'service_id' => 'required',
             'amount' => 'required|numeric|min:1',
             'due_date' => 'required',
             'customer_name' => 'required|string',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -77,11 +76,11 @@ class BillPaymentController extends Controller
             ], 422);
         }
         $reference = 'paynest' . strtoupper(uniqid()) . rand(1000, 9999);
-    
+
         try {
             DB::beginTransaction();
-    
-    
+
+
             // Create the transaction first
             $transaction = Transaction::create([
                 'sender_id' => $request->user_id,
@@ -91,11 +90,10 @@ class BillPaymentController extends Controller
                 'status' => 'completed',
                 'reference' => $reference,
             ]);
-    
+
             // Create the bill and use the transaction's ID as the transaction_id
             $bill = BillPayment::create([
                 'user_id' => $request->user_id,
-                'service_id' => $request->service_id,
                 'service_provider_id' => $request->service_provider_id,
                 'consumer_number' => $request->consumer_number,
                 'customer_name' => $request->customer_name,
@@ -103,11 +101,11 @@ class BillPaymentController extends Controller
                 'due_date' => $request->due_date,
                 'payment_date' => now(),
                 'status' => 'paid',
-                'transaction_id' => $transaction->id, 
+                'transaction_id' => $transaction->id,
             ]);
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'Bill paid and transaction created successfully.',
@@ -116,7 +114,7 @@ class BillPaymentController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-    
+
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to process bill payment.',
@@ -124,7 +122,4 @@ class BillPaymentController extends Controller
             ], 500);
         }
     }
-    
-
-
 }

@@ -122,6 +122,12 @@ class ExecuteScheduledPayments extends Command
                     } else {
                         $schedule->status = 'failed';
                         $schedule->save();
+                        // Refund the held amount if funded
+                        if ($schedule->is_funded) {
+                            $account->held_balance += $schedule->amount;
+                            $account->save();
+                            Log::info("Refunded amount back to account #{$account->id} for failed schedule #{$schedule->id}.");
+                        }
 
                         Log::error("Receiver account not found for schedule #{$schedule->id}. Transaction failed.");
                         DB::commit(); // commit to save status change

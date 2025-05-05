@@ -55,6 +55,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     
     // bil payment routes
+    Route::post('billpayments',[BillPaymentController::class,'index']);
+    Route::post('billpayments/failed',[BillPaymentController::class,'failed']);
     Route::post('validate/consumer/number',[BillPaymentController::class,'validateConsumernumber']);
     Route::post('billpayment/store',[BillPaymentController::class,'store']);
     

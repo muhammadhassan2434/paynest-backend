@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
         
             // Foreign keys to services and providers
-            $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
             $table->foreignId('service_provider_id')->constrained('service_providers')->onDelete('cascade');
         
             $table->string('consumer_number');

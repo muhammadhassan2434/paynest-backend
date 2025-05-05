@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Models\BillPayment;
 use App\Models\FakeBill;
+use App\Models\Service;
 use App\Models\ServiceProvider;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -25,6 +26,35 @@ class BillPaymentController extends Controller
         $bills = BillPayment::where('user_id', $user_id)->where('status', '!=', 'paid')->get();
         return response()->json(['status' => true, 'bills' => $bills]);
     }
+    public function serviceProviderForBill()
+    {
+        $services = Service::where('status', 'active')->get();
+
+        $electricity = $services->where('name', 'Electricity bill')->first();
+        $gasbill = $services->where('name', 'Gas bill')->first();
+
+        if (!$electricity && !$gasbill) {
+            return response()->json(['status' => false, 'message' => 'Electricity or Gas services not found'], 404);
+        }
+
+        $serviceIds = [];
+
+        if ($electricity) {
+            $serviceIds[] = $electricity->id;
+        }
+
+        if ($gasbill) {
+            $serviceIds[] = $gasbill->id;
+        }
+
+        $serviceProviders = ServiceProvider::whereIn('service_id', $serviceIds)->where('status', 'active')->get();
+
+        return response()->json([
+            'status' => true,
+            'serviceProviders' => $serviceProviders
+        ], 200);
+    }
+
 
     public function validateConsumernumber(Request $request)
     {

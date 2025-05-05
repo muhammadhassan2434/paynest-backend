@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use App\Mail\UpcomingPaymentReminder;
 use App\Models\Account;
+use App\Models\BillPayment;
+use App\Models\FakeBill;
 use App\Models\PaymentSchedule;
 use App\Models\Transaction;
 use Carbon\Carbon;
@@ -90,18 +92,46 @@ class ExecuteScheduledPayments extends Command
                 $schedule->save();
 
                 if ($schedule->type === 'bill') {
-                    Log::info("Bill payment for schedule #{$schedule->id} completed.");
+                    Log::info("Bill payment for schedule #{$schedule->id} started.");
 
-                    $transaction = Transaction::create([
-                        'sender_id'        => $account->user_id,
-                        'reciever_number'  => null,
-                        'amount'           => $schedule->amount,
-                        'transaction_type' => 'bill_payment',
-                        'status'           => 'completed',
-                        'reference'        => 'TXN-' . strtoupper(Str::random(10)),
-                    ]);
+                    DB::beginTransaction();
 
-                    Log::info("Bill payment for schedule #{$schedule->id} successfully executed to receiver's bill.");
+                    try {
+                        // Create the transaction
+                        $fakeBill = FakeBill::where('consumer_number', $schedule->consumer_number ?? '')
+                            ->where('service_provider_id', $schedule->service_provider_id ?? null)
+                            ->first();
+                        $transaction = Transaction::create([
+                            'sender_id'        => $account->user_id,
+                            'reciever_number'  => null,
+                            'amount'           => $fakeBill->amount,
+                            'transaction_type' => 'bill_payment',
+                            'status'           => 'completed',
+                            'reference'        => 'paynest-' . strtoupper(Str::random(10)),
+                        ]);
+
+                        // Optionally: find the fake bill if needed (for extra info like customer name)
+
+                        // Create the bill payment record
+                        $billPayment = BillPayment::create([
+                            'user_id'            => $account->user_id,
+                            'service_provider_id' => $schedule->service_provider_id,
+                            'consumer_number'    => $schedule->consumer_number,
+                            'customer_name'      => $fakeBill?->customer_name,
+                            'amount'             => $fakeBill->amount,
+                            'due_date'           => $fakeBill?->due_date ?? now()->addDays(7),
+                            'payment_date'       => now(),
+                            'status'             => 'paid',
+                            'transaction_id'     => $transaction->id,
+                        ]);
+
+                        DB::commit();
+
+                        Log::info("Bill payment for schedule #{$schedule->id} completed and stored in bill_payments.");
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+                        Log::error("Failed bill payment for schedule #{$schedule->id}: " . $e->getMessage());
+                    }
                 } else {
                     $receiverAccount = Account::where('phone', $schedule->receiver_account_no)->first();
 
@@ -109,13 +139,14 @@ class ExecuteScheduledPayments extends Command
                         $receiverAccount->balance += $schedule->amount;
                         $receiverAccount->save();
 
+
                         $transaction = Transaction::create([
                             'sender_id'        => $account->user_id,
                             'reciever_number'  => $receiverAccount->phone,
                             'amount'           => $schedule->amount,
                             'transaction_type' => 'transfer',
                             'status'           => 'completed',
-                            'reference'        => 'TXN-' . strtoupper(Str::random(10)),
+                            'reference'        => 'paynest-' . strtoupper(Str::random(10)),
                         ]);
 
                         Log::info("Transfer for schedule #{$schedule->id} completed to receiver's account.");
@@ -124,7 +155,8 @@ class ExecuteScheduledPayments extends Command
                         $schedule->save();
                         // Refund the held amount if funded
                         if ($schedule->is_funded) {
-                            $account->held_balance += $schedule->amount;
+                            $account->held_balance -= $schedule->amount;
+                            $account->balance += $schedule->amount;
                             $account->save();
                             Log::info("Refunded amount back to account #{$account->id} for failed schedule #{$schedule->id}.");
                         }

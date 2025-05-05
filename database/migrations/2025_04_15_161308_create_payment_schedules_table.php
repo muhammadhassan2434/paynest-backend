@@ -25,8 +25,8 @@ return new class extends Migration
             $table->enum('type', ['bill', 'transfer'])->default('bill');
         
             // Related to "hostel"/utility/etc.
-            $table->string('category')->nullable(); // e.g., hostel, electricity, internet, fee
-            $table->string('reference_no')->nullable(); // bill number, hostel ref, etc.
+            $table->foreignId('service_provider_id')->constrained('service_providers')->onDelete('cascade');
+            $table->string('consumer_number')->nullable(); // bill number, hostel ref, etc.
         
             // Receiver info for transfers
             $table->string('receiver_name')->nullable();

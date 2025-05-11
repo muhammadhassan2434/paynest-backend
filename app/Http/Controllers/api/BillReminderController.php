@@ -30,12 +30,10 @@ class BillReminderController extends Controller
     {
         $user = User::find($id);
         $user_id = $user->id;
-        $billReminders = Cache::remember("bill_reminders:index", now()->addMinutes(10), function () use ($user_id) {
-            return BillReminder::where('user_id', $user_id)
-                ->where('is_notified', 0)
-                ->latest('due_date')
-                ->get();
-        });
+        $billReminders = BillReminder::where('user_id', $user_id)
+            ->where('is_notified', 0)
+            ->latest('due_date')
+            ->get();
 
         return response()->json($billReminders);
     }
@@ -44,13 +42,10 @@ class BillReminderController extends Controller
     {
         $user = User::find($id);
         $user_id = $user->id;
-
-        $billReminders = Cache::remember("bill_reminders:index", now()->addMinutes(10), function () use ($user_id) {
-            return BillReminder::where('user_id', $user_id)
-                ->where('is_notified', 1)
-                ->latest('due_date')
-                ->get();
-        });
+        $billReminders = BillReminder::where('user_id', $user_id)
+            ->where('is_notified', 1)
+            ->latest('due_date')
+            ->get();
 
         return response()->json($billReminders);
     }

@@ -34,7 +34,7 @@ class BillPaymentController extends Controller
             return response()->json(['status' => false, 'message' => 'Electricity service not found'], 404);
         }
 
-        $serviceProviders = ServiceProvider::where('service_id', $electricity->id)
+        $serviceProviders = ServiceProvider::select('id,service_id,name,logo')->where('service_id', $electricity->id)
             ->where('status', 'active')
             ->get();
 

@@ -26,34 +26,42 @@ class BillPaymentController extends Controller
         $bills = BillPayment::where('user_id', $user_id)->where('status', '!=', 'paid')->get();
         return response()->json(['status' => true, 'bills' => $bills]);
     }
-    public function serviceProviderForBill()
+    public function serviceProviderElectricityBill()
     {
-        $services = Service::where('status', 'active')->get();
+        $electricity = Service::where('status', 'active')->where('name', 'Electricity bill')->first();
 
-        $electricity = $services->where('name', 'Electricity bill')->first();
-        $gasbill = $services->where('name', 'Gas bill')->first();
-
-        if (!$electricity && !$gasbill) {
-            return response()->json(['status' => false, 'message' => 'Electricity or Gas services not found'], 404);
+        if (!$electricity) {
+            return response()->json(['status' => false, 'message' => 'Electricity service not found'], 404);
         }
 
-        $serviceIds = [];
-
-        if ($electricity) {
-            $serviceIds[] = $electricity->id;
-        }
-
-        if ($gasbill) {
-            $serviceIds[] = $gasbill->id;
-        }
-
-        $serviceProviders = ServiceProvider::whereIn('service_id', $serviceIds)->where('status', 'active')->get();
+        $serviceProviders = ServiceProvider::where('service_id', $electricity->id)
+            ->where('status', 'active')
+            ->get();
 
         return response()->json([
             'status' => true,
             'serviceProviders' => $serviceProviders
         ], 200);
     }
+
+    public function serviceProviderGasBill()
+    {
+        $gasbill = Service::where('status', 'active')->where('name', 'Gas bill')->first();
+
+        if (!$gasbill) {
+            return response()->json(['status' => false, 'message' => 'Gas service not found'], 404);
+        }
+
+        $serviceProviders = ServiceProvider::where('service_id', $gasbill->id)
+            ->where('status', 'active')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'serviceProviders' => $serviceProviders
+        ], 200);
+    }
+
 
 
     public function validateConsumernumber(Request $request)

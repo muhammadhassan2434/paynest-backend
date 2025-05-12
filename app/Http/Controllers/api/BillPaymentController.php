@@ -123,7 +123,7 @@ class BillPaymentController extends Controller
             // Create the transaction first
             $transaction = Transaction::create([
                 'sender_id' => $request->user_id,
-                'receiver_number' => '',
+                'reciever_number' => '',
                 'amount' => $request->amount,
                 'transaction_type' => 'bill_payment',
                 'status' => 'completed',

@@ -120,9 +120,27 @@ class BillPaymentController extends Controller
         try {
             DB::beginTransaction();
             $userAccount = Account::where('user_id', $request->user_id)->first();
+
+            if (!$userAccount) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User account not found.',
+                ], 404);
+            }
+
+            //  Check if balance is sufficient
+            if ($userAccount->balance < $request->amount) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Insufficient balance.',
+                ], 400);
+            }
+
+            //  Deduct amount
             $userAccount->balance -= $request->amount;
             $userAccount->save();
 
+            
             // Create the transaction first
             $transaction = Transaction::create([
                 'sender_id' => $request->user_id,

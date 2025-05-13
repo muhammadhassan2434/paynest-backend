@@ -100,11 +100,11 @@ class BillPaymentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
-            'consumer_number' => 'required|string',
+            'consumer_number' => 'required',
             'service_provider_id' => 'required',
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'required|min:1',
             'due_date' => 'required',
-            'customer_name' => 'required|string',
+            'customer_name' => 'required',
         ]);
 
         if ($validator->fails()) {

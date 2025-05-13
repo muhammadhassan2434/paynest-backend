@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Account;
 use App\Models\BillPayment;
 use App\Models\FakeBill;
 use App\Models\Service;
@@ -118,7 +119,9 @@ class BillPaymentController extends Controller
 
         try {
             DB::beginTransaction();
-
+            $userAccount = Account::where('user_id', $request->user_id)->first();
+            $userAccount->balance -= $request->amount;
+            $userAccount->save();
 
             // Create the transaction first
             $transaction = Transaction::create([

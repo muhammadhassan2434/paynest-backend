@@ -45,21 +45,22 @@ class ShedulePaymentController extends Controller
 
     public function store(Request $request)
 {
-    $validator = Validator::make($request->all(), [
-        'account_id'           => 'required|exists:accounts,id',
-        'scheduled_for'        => 'required|date|after_or_equal:today',
-        'purpose'              => 'required|string|max:255',
-        'type'                 => 'required|in:bill,transfer',
-        'service_provider_id'  => 'nullable|string|max:255',
-        'consumer_number'      => 'nullable|string|max:255',
-        'receiver_name'        => 'nullable|string|max:255',
-        'amount'               => 'nullable|min:1',
-        'receiver_account_no'  => 'nullable|string|max:255',
-        'receiver_bank'        => 'nullable|string|max:255',
-        'note'                 => 'nullable|string',
-    ], [
-        'amount' => 'Amount is required for transfers'
-    ]);
+   $validator = Validator::make($request->all(), [
+    'account_id'           => 'required|exists:accounts,id',
+    'scheduled_for'        => 'required|date|after_or_equal:today',
+    'purpose'              => 'required|string|max:255',
+    'type'                 => 'required|in:bill,transfer',
+    'service_provider_id'  => 'nullable|string|max:255',
+    'consumer_number'      => 'nullable|string|max:255',
+    'receiver_name'        => 'nullable|string|max:255',
+    'amount'               => 'required_if:type,transfer|nullable|numeric|min:1',
+    'receiver_account_no'  => 'nullable|string|max:255',
+    'receiver_bank'        => 'nullable|string|max:255',
+    'note'                 => 'nullable|string',
+], [
+    'amount.required_if' => 'Amount is required for transfers.',
+]);
+
 
     if ($validator->fails()) {
         return response()->json(['status' => false, 'message' => 'Validation Failed! Please fill all inputs'], 422);

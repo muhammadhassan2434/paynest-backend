@@ -30,8 +30,9 @@ class BillPaymentController extends Controller
 
     public function allServiceProvider()
     {
-        $AllServices = Service::where('status', 'active')->where('name', 'Electricity bill')->where('name', 'Gas bill')->first();
-
+$AllServices = Service::where('status', 'active')
+        ->whereIn('name', ['Electricity bill', 'Gas bill'])
+        ->first();
         if (!$AllServices) {
             return response()->json(['status' => false, 'message' => 'Service not found'], 404);
         }

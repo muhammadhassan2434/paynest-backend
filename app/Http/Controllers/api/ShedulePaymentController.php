@@ -62,7 +62,7 @@ class ShedulePaymentController extends Controller
     ]);
 
     if ($validator->fails()) {
-        return response()->json(['status' => false, 'message' => $validator->errors()], 422);
+        return response()->json(['status' => false, 'message' => 'Validation Failed'], 422);
     }
 
     // Always get sender's account here

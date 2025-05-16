@@ -27,6 +27,26 @@ class BillPaymentController extends Controller
         $bills = BillPayment::where('user_id', $user_id)->where('status', '!=', 'paid')->get();
         return response()->json(['status' => true, 'bills' => $bills]);
     }
+
+    public function allServiceProvider()
+    {
+        $AllServices = Service::where('status', 'active')->where('name', 'Electricity bill')->where('name', 'Gas bill')->first();
+
+        if (!$AllServices) {
+            return response()->json(['status' => false, 'message' => 'Service not found'], 404);
+        }
+
+        $serviceProviders = ServiceProvider::select(['id', 'service_id', 'name', 'logo'])
+            ->where('service_id', $AllServices->id)
+            ->where('status', 'active')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'serviceProviders' => $serviceProviders
+        ], 200);
+    }
+
     public function serviceProviderElectricityBill()
     {
         $electricity = Service::where('status', 'active')->where('name', 'Electricity bill')->first();
@@ -63,8 +83,6 @@ class BillPaymentController extends Controller
             'serviceProviders' => $serviceProviders
         ], 200);
     }
-
-
 
     public function validateConsumernumber(Request $request)
     {
@@ -140,7 +158,7 @@ class BillPaymentController extends Controller
             $userAccount->balance -= $request->amount;
             $userAccount->save();
 
-            
+
             // Create the transaction first
             $transaction = Transaction::create([
                 'sender_id' => $request->user_id,

@@ -47,13 +47,13 @@ class ShedulePaymentController extends Controller
 {
     $validator = Validator::make($request->all(), [
         'account_id'           => 'required|exists:accounts,id',
-        'amount'               => 'required_if:type,transfer|numeric|min:1',
         'scheduled_for'        => 'required|date|after_or_equal:today',
         'purpose'              => 'required|string|max:255',
         'type'                 => 'required|in:bill,transfer',
         'service_provider_id'  => 'nullable|string|max:255',
         'consumer_number'      => 'nullable|string|max:255',
         'receiver_name'        => 'nullable|string|max:255',
+        'amount'               => 'required_if:type,transfer|numeric|min:1',
         'receiver_account_no'  => 'nullable|string|max:255',
         'receiver_bank'        => 'nullable|string|max:255',
         'note'                 => 'nullable|string',

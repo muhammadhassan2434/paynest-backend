@@ -62,14 +62,19 @@ class ShedulePaymentController extends Controller
     ]);
 
     if ($validator->fails()) {
-        return response()->json(['status' => false, 'message' => 'Validation Failed'], 422);
+        return response()->json(['status' => false, 'message' => 'Validation Failed! Please fill all inputs'], 422);
     }
+
+    $originalNumber = $request->receiver_account_no;
+    
+        // Sanitize number: Remove +92 or leading 0
+        $sanitizedRecieverNumber = preg_replace('/^(\+92|0)/', '', $originalNumber);
 
     // Always get sender's account here
     $senderAccount = Account::findOrFail($request->account_id);
 
     if ($request->type == 'transfer') {
-        $receiverAccount = Account::where('phone', $request->receiver_account_no)->first();
+        $receiverAccount = Account::where('phone', $sanitizedRecieverNumber)->first();
         if (!$receiverAccount) {
             return response()->json(['status' => false, 'message' => 'Receiver account not found'], 404);
         }
@@ -108,7 +113,7 @@ class ShedulePaymentController extends Controller
         'service_provider_id'  => $request->service_provider_id,
         'consumer_number'      => $request->consumer_number,
         'receiver_name'        => $request->receiver_name,
-        'receiver_account_no'  => $request->receiver_account_no,
+        'receiver_account_no'  => $sanitizedRecieverNumber,
         'receiver_bank'        => $request->receiver_bank,
         'note'                 => $request->note,
         'is_funded'            => true,

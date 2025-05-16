@@ -58,7 +58,7 @@ class ShedulePaymentController extends Controller
         'receiver_bank'        => 'nullable|string|max:255',
         'note'                 => 'nullable|string',
     ], [
-        'amount.required_if' => 'Amount is required for transfers'
+        'amount' => 'Amount is required for transfers'
     ]);
 
     if ($validator->fails()) {

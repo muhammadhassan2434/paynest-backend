@@ -72,6 +72,10 @@ class ShedulePaymentController extends Controller
         // Always get sender's account here
         $senderAccount = Account::findOrFail($request->account_id);
 
+        if($sanitizedRecieverNumber == $senderAccount->phone){
+            return response()->json(['status' => false, 'message' => 'Receiver and sender cannot be same'], 400);
+        }
+
         if ($request->type == 'transfer') {
             $receiverAccount = Account::where('phone', $sanitizedRecieverNumber)->first();
             if (!$receiverAccount) {

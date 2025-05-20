@@ -29,24 +29,30 @@ class BillPaymentController extends Controller
     }
 
     public function allServiceProvider()
-    {
-        $AllServices = Service::where('status', 'active')
-            ->whereIn('name', ['Electricity bill', 'Gas bill'])
-            ->first();
-        if (!$AllServices) {
-            return response()->json(['status' => false, 'message' => 'Service not found'], 404);
-        }
+{
+    $AllServices = Service::where('status', 'active')
+        ->whereIn('name', ['Electricity bill', 'Gas bill'])
+        ->get();
 
-        $serviceProviders = ServiceProvider::select(['id', 'service_id', 'name', 'logo'])
-            ->where('service_id', $AllServices->id)
-            ->where('status', 'active')
-            ->get();
-
-        return response()->json([
-            'status' => true,
-            'serviceProviders' => $serviceProviders
-        ], 200);
+    if ($AllServices->isEmpty()) {
+        return response()->json(['status' => false, 'message' => 'Services not found'], 404);
     }
+
+    // Get all matching service IDs
+    $serviceIds = $AllServices->pluck('id')->toArray();
+
+    // Fetch service providers for these services
+    $serviceProviders = ServiceProvider::select(['id', 'service_id', 'name', 'logo'])
+        ->whereIn('service_id', $serviceIds)
+        ->where('status', 'active')
+        ->get();
+
+    return response()->json([
+        'status' => true,
+        'serviceProviders' => $serviceProviders
+    ], 200);
+}
+
 
     public function serviceProviderElectricityBill()
     {

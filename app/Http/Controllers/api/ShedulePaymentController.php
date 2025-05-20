@@ -44,86 +44,86 @@ class ShedulePaymentController extends Controller
 
 
     public function store(Request $request)
-{
-   $validator = Validator::make($request->all(), [
-    'account_id'           => 'required|exists:accounts,id',
-    'scheduled_for'        => 'required|date|after_or_equal:today',
-    'purpose'              => 'required|string|max:255',
-    'type'                 => 'required|in:bill,transfer',
-    'service_provider_id'  => 'nullable|string|max:255',
-    'consumer_number'      => 'nullable|string|max:255',
-    'receiver_name'        => 'nullable|string|max:255',
-    'amount'               => 'required|numeric|min:1',
-    'receiver_account_no'  => 'nullable|string|max:255',
-    'receiver_bank'        => 'nullable|string|max:255',
-    'note'                 => 'nullable|string',
-]);
+    {
+        $validator = Validator::make($request->all(), [
+            'account_id'           => 'required|exists:accounts,id',
+            'scheduled_for'        => 'required|date|after_or_equal:today',
+            'purpose'              => 'required|string|max:255',
+            'type'                 => 'required|in:bill,transfer',
+            'service_provider_id'  => 'nullable|string|max:255',
+            'consumer_number'      => 'nullable|string|max:255',
+            'receiver_name'        => 'nullable|string|max:255',
+            'amount'               => 'required|numeric|min:1',
+            'receiver_account_no'  => 'nullable|string|max:255',
+            'receiver_bank'        => 'nullable|string|max:255',
+            'note'                 => 'nullable|string',
+        ]);
 
 
-    if ($validator->fails()) {
-        return response()->json(['status' => false, 'message' => 'Validation Failed! Please fill all inputs'], 422);
-    }
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'message' => 'Validation Failed! Please fill all inputs'], 422);
+        }
 
-    $originalNumber = $request->receiver_account_no;
-    
+        $originalNumber = $request->receiver_account_no;
+
         // Sanitize number: Remove +92 or leading 0
         $sanitizedRecieverNumber = preg_replace('/^(\+92|0)/', '', $originalNumber);
 
-    // Always get sender's account here
-    $senderAccount = Account::findOrFail($request->account_id);
+        // Always get sender's account here
+        $senderAccount = Account::findOrFail($request->account_id);
 
-    if ($request->type == 'transfer') {
-        $receiverAccount = Account::where('phone', $sanitizedRecieverNumber)->first();
-        if (!$receiverAccount) {
-            return response()->json(['status' => false, 'message' => 'Receiver account not found'], 404);
+        if ($request->type == 'transfer') {
+            $receiverAccount = Account::where('phone', $sanitizedRecieverNumber)->first();
+            if (!$receiverAccount) {
+                return response()->json(['status' => false, 'message' => 'Receiver account not found'], 404);
+            }
+
+            $finalAmount = $request->amount;
         }
 
-        $finalAmount = $request->amount;
-    }
+        if ($request->type == 'bill') {
+            $bill = FakeBill::where('service_provider_id', $request->service_provider_id)
+                ->where('consumer_number', $request->consumer_number)
+                ->first();
+            if (!$bill) {
+                return response()->json(['status' => false, 'message' => 'Bill not found'], 404);
+            }
 
-    if ($request->type == 'bill') {
-        $bill = FakeBill::where('service_provider_id', $request->service_provider_id)
-            ->where('consumer_number', $request->consumer_number)
-            ->first();
-        if (!$bill) {
-            return response()->json(['status' => false, 'message' => 'Bill not found'], 404);
+            $finalAmount = $request->amount;
         }
 
-        $finalAmount = $bill->amount;
+        // Check if sender has enough balance
+        if ($senderAccount->balance < $finalAmount) {
+            return response()->json(['status' => false, 'message' => 'Insufficient balance'], 400);
+        }
+
+        // Deduct and hold the amount
+        $senderAccount->balance -= $finalAmount;
+        $senderAccount->held_balance += $finalAmount;
+        $senderAccount->save();
+
+        // Store schedule
+        $schedule = PaymentSchedule::create([
+            'account_id'           => $senderAccount->id,
+            'amount'               => $finalAmount,
+            'scheduled_for'        => Carbon::parse($request->scheduled_for)->format('Y-m-d'),
+            'purpose'              => $request->purpose,
+            'type'                 => $request->type,
+            'service_provider_id'  => $request->service_provider_id,
+            'consumer_number'      => $request->consumer_number,
+            'receiver_name'        => $request->receiver_name,
+            'receiver_account_no'  => $sanitizedRecieverNumber,
+            'receiver_bank'        => $request->receiver_bank,
+            'note'                 => $request->note,
+            'is_funded'            => true,
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Payment scheduled successfully',
+            'data' => $schedule
+        ], 201);
     }
-
-    // Check if sender has enough balance
-    if ($senderAccount->balance < $finalAmount) {
-        return response()->json(['status' => false, 'message' => 'Insufficient balance'], 400);
-    }
-
-    // Deduct and hold the amount
-    $senderAccount->balance -= $finalAmount;
-    $senderAccount->held_balance += $finalAmount;
-    $senderAccount->save();
-
-    // Store schedule
-    $schedule = PaymentSchedule::create([
-        'account_id'           => $senderAccount->id,
-        'amount'               => $finalAmount,
-        'scheduled_for'        => Carbon::parse($request->scheduled_for)->format('Y-m-d'),
-        'purpose'              => $request->purpose,
-        'type'                 => $request->type,
-        'service_provider_id'  => $request->service_provider_id,
-        'consumer_number'      => $request->consumer_number,
-        'receiver_name'        => $request->receiver_name,
-        'receiver_account_no'  => $sanitizedRecieverNumber,
-        'receiver_bank'        => $request->receiver_bank,
-        'note'                 => $request->note,
-        'is_funded'            => true,
-    ]);
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Payment scheduled successfully',
-        'data' => $schedule
-    ], 201);
-}
 
     public function refundOnly($id)
     {

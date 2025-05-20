@@ -32,7 +32,7 @@ class BillPaymentController extends Controller
     {
         $AllServices = Service::where('status', 'active')
             ->whereIn('name', ['Electricity bill', 'Gas bill'])
-            ->get();
+            ->first();
         if (!$AllServices) {
             return response()->json(['status' => false, 'message' => 'Service not found'], 404);
         }

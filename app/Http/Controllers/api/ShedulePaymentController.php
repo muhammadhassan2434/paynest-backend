@@ -52,11 +52,11 @@ class ShedulePaymentController extends Controller
             'type'                 => 'required|in:bill,transfer',
             'service_provider_id'  => 'nullable',
             'consumer_number'      => 'nullable',
-            'receiver_name'        => 'nullable|string|max:255',
-            'amount'               => 'min:1',
-            'receiver_account_no'  => 'nullable|string|max:255',
-            'receiver_bank'        => 'nullable|string|max:255',
-            'note'                 => 'nullable|string',
+            'receiver_name'        => 'nullable',
+            'amount'               => 'required|min:1',
+            'receiver_account_no'  => 'nullable',
+            'receiver_bank'        => 'nullable',
+            'note'                 => 'nullable',
         ]);
 
 

@@ -51,7 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [ShedulePaymentController::class, 'store']); 
         Route::get('/refund/{id}', [ShedulePaymentController::class, 'refundOnly']); 
         Route::get('/cancel/{id}', [ShedulePaymentController::class, 'cancel']);
-        Route::post('/refund-back/{id}', [ShedulePaymentController::class, 'refundBack']);
+        Route::get('/refund-back/{id}', [ShedulePaymentController::class, 'refundBack']);
     });
     
     // bil payment routes

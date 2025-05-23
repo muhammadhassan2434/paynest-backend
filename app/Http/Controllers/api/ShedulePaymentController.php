@@ -16,7 +16,7 @@ class ShedulePaymentController extends Controller
 
     public function index(Request $request)
     {
-        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->get();
+        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->latest()->get();
         return response()->json(['status' => true, 'schedulePayment' => $schedulePayment], 200);
     }
     public function executed(Request $request)

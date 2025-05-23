@@ -21,23 +21,23 @@ class ShedulePaymentController extends Controller
     }
     public function executed(Request $request)
     {
-        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->where('status', 'executed')->get();
+        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->where('status', 'executed')->latest()->get();
         return response()->json(['status' => true, 'schedulePayment' => $schedulePayment], 200);
     }
     public function cancelled(Request $request)
     {
-        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->where('status', 'cancelled')->get();
+        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->where('status', 'cancelled')->latest()->get();
         return response()->json(['status' => true, 'schedulePayment' => $schedulePayment], 200);
     }
     public function failed(Request $request)
     {
-        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->where('status', 'failed')->get();
+        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->where('status', 'failed')->latest()->get();
         return response()->json(['status' => true, 'schedulePayment' => $schedulePayment], 200);
     }
 
     public function redunded(Request $request)
     {
-        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->where('status', 'scheduled')->where('is_funded', false)->get();
+        $schedulePayment = PaymentSchedule::where('account_id', $request->account_id)->where('status', 'scheduled')->where('is_funded', false)->latest()->get();
         return response()->json(['status' => true, 'schedulePayment' => $schedulePayment], 200);
     }
 

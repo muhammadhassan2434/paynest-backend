@@ -49,7 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/failed', [ShedulePaymentController::class, 'failed']); 
         Route::post('/refunded', [ShedulePaymentController::class, 'redunded']); 
         Route::post('/', [ShedulePaymentController::class, 'store']); 
-        Route::post('/refund/{id}', [ShedulePaymentController::class, 'refundOnly']); 
+        Route::get('/refund/{id}', [ShedulePaymentController::class, 'refundOnly']); 
         Route::get('/cancel/{id}', [ShedulePaymentController::class, 'cancel']);
         Route::post('/refund-back/{id}', [ShedulePaymentController::class, 'refundBack']);
     });

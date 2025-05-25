@@ -62,13 +62,13 @@ class SplitBillController extends Controller
         $Validator = Validator::make($request->all(), [
             'user_id' => 'required',
             'receiver_account_no' => 'required',
-            'receiver_bank' => 'required|string',
-            'total_amount' => 'required|numeric|min:1',
+            'receiver_bank' => 'required',
+            'total_amount' => 'required|min:1',
             'title' => 'required|string',
             'note' => 'nullable',
-            'members' => 'required|array|min:1',
+            'members' => 'required|min:1',
             'members.*.phone' => 'required',
-            'members.*.amount' => 'required|numeric|min:0.01'
+            'members.*.amount' => 'required|min:0.01'
         ]);
 
         if ($Validator->fails()) {

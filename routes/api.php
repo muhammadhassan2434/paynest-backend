@@ -6,6 +6,7 @@ use App\Http\Controllers\api\BillReminderController;
 use App\Http\Controllers\api\FetchServiceController;
 use App\Http\Controllers\api\PaynestTransferController;
 use App\Http\Controllers\api\ShedulePaymentController;
+use App\Http\Controllers\api\SplitBillController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -63,6 +64,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('service/provider/electricity/bill',[BillPaymentController::class,'serviceProviderElectricityBill']);
     Route::get('service/provider/gas/bill',[BillPaymentController::class,'serviceProviderGasBill']);
     
+    // split bill routes
+        Route::get('get/all/split-bills/{id}', [SplitBillController::class, 'fetchAllBills']);
+        Route::get('get/transferred/split-bills/{id}', [SplitBillController::class, 'fetchTransfaredBills']);
+        Route::post('/split-bills', [SplitBillController::class, 'create']);
+        Route::get('/split-bill/requests/{user_id}', [SplitBillController::class, 'getMySplitRequests']);
+        Route::post('pay/split-bill', [SplitBillController::class, 'pay']);
+
     
     
 });

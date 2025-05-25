@@ -130,7 +130,7 @@ class SplitBillController extends Controller
 
             DB::commit();
 
-            return response()->json(['message' => 'Split bill created successfully', 'data' => $splitBill], 201);
+            return response()->json(['status' => true,'message' => 'Split bill created successfully', 'data' => $splitBill], 201);
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json(['message' => 'Failed to create split bill', 'error' => $e->getMessage()], 500);

@@ -78,11 +78,7 @@ class SplitBillController extends Controller
                 'errors' => $Validator->errors()
             ]);
         }
-
-        DB::beginTransaction();
-
-        try {
-            $receiverveOriginalNumber = $request->receiver_account_no;
+        $receiverveOriginalNumber = $request->receiver_account_no;
             $receiverSanitizedNumber = preg_replace('/^(\+92|0)/', '', $receiverveOriginalNumber);
             $receiverAccount = Account::where('phone', $receiverSanitizedNumber)->first();
             if (!$receiverAccount) {
@@ -97,6 +93,11 @@ class SplitBillController extends Controller
                     'message' => 'You cannot split bill with yourself'
                 ]);
             }
+
+        DB::beginTransaction();
+
+        try {
+            
             $splitBill = SplitBill::create([
                 'created_by' => $request->user_id,
                 'receiver_account_no' => $receiverAccount->phone,

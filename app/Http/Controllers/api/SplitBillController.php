@@ -142,6 +142,7 @@ class SplitBillController extends Controller
     {
         $requests = SplitBillMember::with(['splitBill'])
             ->where('user_id', $user_id)
+            ->where('paid', 0)
             ->get();
 
         return response()->json([

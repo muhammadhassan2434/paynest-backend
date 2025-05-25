@@ -71,13 +71,7 @@ class SplitBillController extends Controller
             'members.*.amount' => 'required|min:0.01'
         ]);
 
-        if ($Validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => ' Validation Failed! Please fill all inputs',
-                'errors' => $Validator->errors()
-            ]);
-        }
+        
         $receiverveOriginalNumber = $request->receiver_account_no;
             $receiverSanitizedNumber = preg_replace('/^(\+92|0)/', '', $receiverveOriginalNumber);
             $receiverAccount = Account::where('phone', $receiverSanitizedNumber)->first();
@@ -93,6 +87,13 @@ class SplitBillController extends Controller
                     'message' => 'You cannot split bill with yourself'
                 ]);
             }
+            if ($Validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => ' Validation Failed! Please fill all inputs',
+                'errors' => $Validator->errors()
+            ]);
+        }
 
         DB::beginTransaction();
 

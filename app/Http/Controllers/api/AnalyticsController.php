@@ -33,21 +33,17 @@ class AnalyticsController extends Controller
             ->orderBy('day')
             ->get();
 
-        // Weekly aggregation
-        $weeklyStats = DB::table('transactions')
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->selectRaw("
-            WEEK(created_at) as week,
-            SUM(CASE WHEN reciever_number = ? THEN amount ELSE 0 END) as income
-        ", [$authAccountNumber])
-            ->groupBy(DB::raw('WEEK(created_at)'))
-            ->orderBy('income', 'desc')
-            ->get();
+        $billPaymentCount = DB::table('bill_payments')
+        ->where('user_id', $authId)
+        ->where('status', 'paid')
+        ->whereBetween('payment_date', [$startOfMonth, $endOfMonth])
+        ->count();
+        $schedulePaymentCount = DB::table('payment_schedules')
+        ->where('account_id', $account->id)
+        ->where('status', 'paid')
+        ->whereBetween('payment_date', [$startOfMonth, $endOfMonth])
+        ->count();
 
-        $bestWeek = $weeklyStats->first();
-        $worstWeek = $weeklyStats->count() > 1 ? $weeklyStats->last() : $bestWeek;
-
-        // Average of relevant transactions (sent or received)
         $averageValue = DB::table('transactions')
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->where(function ($query) use ($authId, $authAccountNumber) {
@@ -68,8 +64,8 @@ class AnalyticsController extends Controller
         return response()->json([
             'daily' => $transactions,
             'summary' => [
-                'best_week' => $bestWeek,
-                'worst_week' => $worstWeek,
+                'best_week' => $billPaymentCount,
+                'worst_week' => $schedulePaymentCount,
                 'average_value' => round($averageValue, 2),
                 'transactions' => $transactionCount,
             ]

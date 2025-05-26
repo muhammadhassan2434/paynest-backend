@@ -74,6 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // analysic api 
         Route::get('/analytics/monthly/{id}', [AnalyticsController::class, 'monthly']);
+        Route::get('/analytics/quarterly/{id}', [AnalyticsController::class, 'quarterly']);
 
 
     

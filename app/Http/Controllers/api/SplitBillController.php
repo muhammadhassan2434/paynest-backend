@@ -147,7 +147,11 @@ class SplitBillController extends Controller
 
         return response()->json([
             'status' => true,
-            'data' => $requests
+            'user_id' => $requests->user_id,
+            'split_bill_id' => $requests->split_bill_id,
+            'amount' => $requests->amount,
+            'title' => $requests->split_bill->amount,
+            'status' => $requests->split_bill->status,
         ]);
     }
 

@@ -19,7 +19,7 @@ class AnalyticsController extends Controller
 
         $account = Account::where('user_id',$id)->first();
         $authId = $account->user_id;
-        $authAccountNumber = $account->account_number;
+        $authAccountNumber = $account->phone;
 
         // Daily aggregation
         $transactions = DB::table('transactions')

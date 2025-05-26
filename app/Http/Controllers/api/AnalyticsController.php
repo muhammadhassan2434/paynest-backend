@@ -27,7 +27,7 @@ class AnalyticsController extends Controller
             ->selectRaw("
             DATE(created_at) as day,
             SUM(CASE WHEN sender_id = ? THEN amount ELSE 0 END) as expense,
-            SUM(CASE WHEN receiver_number = ? THEN amount ELSE 0 END) as income
+            SUM(CASE WHEN reciever_number = ? THEN amount ELSE 0 END) as income
         ", [$authId, $authAccountNumber])
             ->groupBy(DB::raw('DATE(created_at)'))
             ->orderBy('day')
@@ -38,7 +38,7 @@ class AnalyticsController extends Controller
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->selectRaw("
             WEEK(created_at) as week,
-            SUM(CASE WHEN receiver_number = ? THEN amount ELSE 0 END) as income
+            SUM(CASE WHEN reciever_number = ? THEN amount ELSE 0 END) as income
         ", [$authAccountNumber])
             ->groupBy(DB::raw('WEEK(created_at)'))
             ->orderBy('income', 'desc')
@@ -52,7 +52,7 @@ class AnalyticsController extends Controller
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->where(function ($query) use ($authId, $authAccountNumber) {
                 $query->where('sender_id', $authId)
-                    ->orWhere('receiver_number', $authAccountNumber);
+                    ->orWhere('reciever_number', $authAccountNumber);
             })
             ->avg('amount');
 
@@ -61,7 +61,7 @@ class AnalyticsController extends Controller
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->where(function ($query) use ($authId, $authAccountNumber) {
                 $query->where('sender_id', $authId)
-                    ->orWhere('receiver_number', $authAccountNumber);
+                    ->orWhere('reciever_number', $authAccountNumber);
             })
             ->count();
 

@@ -138,22 +138,29 @@ class SplitBillController extends Controller
     }
     // SplitBillController.php
 
-    public function getMySplitRequests($user_id)
-    {
-        $requests = SplitBillMember::with(['splitBill'])
-            ->where('user_id', $user_id)
-            ->where('is_paid', false)
-            ->get();
+   public function getMySplitRequests($user_id)
+{
+    $requests = SplitBillMember::with(['splitBill'])
+        ->where('user_id', $user_id)
+        ->where('is_paid', false)
+        ->get();
 
-        return response()->json([
-            'status' => true,
-            'user_id' => $requests->user_id,
-            'split_bill_id' => $requests->split_bill_id,
-            'amount' => $requests->amount,
-            'title' => $requests->split_bill->amount,
-            'status' => $requests->split_bill->status,
-        ]);
-    }
+    $formattedRequests = $requests->map(function ($request) {
+        return [
+            'user_id' => $request->user_id,
+            'split_bill_id' => $request->split_bill_id,
+            'amount' => $request->amount,
+            'title' => optional($request->splitBill)->title,
+            'status' => optional($request->splitBill)->status,
+        ];
+    });
+
+    return response()->json([
+        'status' => true,
+        'data' => $formattedRequests
+    ]);
+}
+
 
     public function pay(Request $request)
     {

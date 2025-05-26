@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\api\AccountCreationController;
+use App\Http\Controllers\api\AnalyticsController;
 use App\Http\Controllers\api\BillPaymentController;
 use App\Http\Controllers\api\BillReminderController;
 use App\Http\Controllers\api\FetchServiceController;
@@ -70,6 +71,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/split-bills', [SplitBillController::class, 'create']);
         Route::get('/split-bill/requests/{user_id}', [SplitBillController::class, 'getMySplitRequests']);
         Route::post('pay/split-bill', [SplitBillController::class, 'pay']);
+
+        // analysic api 
+        Route::get('/analytics/monthly/{id}', [AnalyticsController::class, 'monthly']);
+
 
     
     

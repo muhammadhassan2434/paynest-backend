@@ -39,10 +39,11 @@ class AnalyticsController extends Controller
         ->whereBetween('payment_date', [$startOfMonth, $endOfMonth])
         ->count();
         $schedulePaymentCount = DB::table('payment_schedules')
-        ->where('account_id', $account->id)
-        ->where('status', 'paid')
-        ->whereBetween('payment_date', [$startOfMonth, $endOfMonth])
-        ->count();
+    ->where('account_id', $account->id)
+    ->where('status', 'executed') 
+    ->whereBetween('scheduled_for', [$startOfMonth, $endOfMonth])
+    ->count();
+
 
         $averageValue = DB::table('transactions')
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])

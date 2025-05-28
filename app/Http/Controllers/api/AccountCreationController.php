@@ -321,7 +321,6 @@ class AccountCreationController extends Controller
             'message' => 'Account found',
             'first_name' => $user->user->first_name,
             'last_name' => $user->user->last_name,
-            'phone' => $user->phone,
             'gender' => $user->gender,
             'address' => $user->address,
         ]);
@@ -338,7 +337,6 @@ class AccountCreationController extends Controller
 
 
         $user->account->update([
-            'phone'   => $request->filled('phone')   ? $request->phone   : $user->account->phone,
             'gender'  => $request->filled('gender')  ? $request->gender  : $user->account->gender,
             'address' => $request->filled('address') ? $request->address : $user->account->address,
         ]);

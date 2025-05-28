@@ -24,6 +24,12 @@ Route::post('user/login', [AccountCreationController::class, 'Userlogin'])->name
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('account/info/{id}', [AccountCreationController::class, 'accountInfo']);
+    
+    // edit profile apis
+    Route::get('edit/profile/{id}', [AccountCreationController::class, 'edit']);
+    Route::post('update/profile/{id}', [AccountCreationController::class, 'updateProfile']);
+    Route::post('update/password/{id}', [AccountCreationController::class, 'updatePassword']);
+
 
     // fetch services and service providers
     Route::get('services', [FetchServiceController::class, 'index']);
@@ -76,5 +82,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/analytics/monthly/{id}', [AnalyticsController::class, 'monthly']);
     Route::get('/analytics/quarterly/{id}', [AnalyticsController::class, 'quarterly']);
     Route::get('/analytics/yearly/{id}', [AnalyticsController::class, 'yearly']);
-    Route::get('/analytics/yoy/{id}', [AnalyticsController::class, 'yearToYear']);
 });

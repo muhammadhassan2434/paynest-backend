@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Account extends Model
 {
-    public function user(){
+
+    protected $fillable = ['user_id', 'gender', 'address'];
+
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
+
 }

@@ -228,56 +228,56 @@ class AccountCreationController extends Controller
 
 
     public function Userlogin(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'email' => 'required|email',
-        'password' => [
-            'required',
-            Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised()
-        ],
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => false,
-            'message' => $validator->errors()
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => [
+                'required',
+                Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised()
+            ],
         ]);
-    }
 
-    $user = User::where('email', $request->email)->first();
-
-    if (!$user) {
-        return response()->json([
-            'status' => false,
-            'message' => 'User Not Found ! Enter Correct Email' 
-        ]);
-    }
-
-    if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-        $account = Account::with('user')->where('user_id', $user->id)->get();
-
-        if ($user->status != 'active') {
+        if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'User Not Verified'
+                'message' => $validator->errors()
             ]);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User Not Found ! Enter Correct Email'
+            ]);
+        }
+
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $account = Account::with('user')->where('user_id', $user->id)->get();
+
+            if ($user->status != 'active') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User Not Verified'
+                ]);
+            }
+
+            $token = $user->createToken('auth_token')->plainTextToken;
+            return response()->json([
+                'status' => true,
+                'message' => 'Login Success',
+                'token' => $token,
+                'user_id' => $user->id,
+                'account' => $account,
+            ]);
+        }
+
         return response()->json([
-            'status' => true,
-            'message' => 'Login Success',
-            'token' => $token,
-            'user_id' => $user->id,
-            'account' => $account,
+            'status' => false,
+            'message' => 'Invalid credentials',
         ]);
     }
-
-    return response()->json([
-        'status' => false,
-        'message' => 'Invalid credentials',
-    ]);
-}
 
 
 
@@ -290,23 +290,87 @@ class AccountCreationController extends Controller
                 'message' => 'User Not Found'
             ]);
         }
-        if($user->status == 'pending'){
+        if ($user->status == 'pending') {
             return response()->json([
                 'status' => false,
                 'message' => 'Please verify account first'
             ]);
         }
-        if($user->status == 'blocked'){
+        if ($user->status == 'blocked') {
             return response()->json([
                 'status' => false,
                 'message' => 'Your account has been blocked.Conact admin'
             ]);
         }
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Account Info',
             'user' => $user,
+        ]);
+    }
+
+    public function edit($id)
+    {
+        $user = Account::with('user')->where('id', $id)->first(); // Assuming one-to-one relationship
+
+        $user = Account::with('user')->where('id', $id)->first();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Account found',
+            'first_name' => $user->user->first_name,
+            'last_name' => $user->user->last_name,
+            'phone' => $user->phone,
+            'gender' => $user->gender,
+            'address' => $user->address,
+        ]);
+    }
+
+    public function updateProfile(Request $request, $id)
+    {
+        $user = User::with('account')->findOrFail($id);
+
+        $user->update([
+            'first_name' => $request->filled('first_name') ? $request->first_name : $user->first_name,
+            'last_name'  => $request->filled('last_name')  ? $request->last_name  : $user->last_name,
+        ]);
+
+
+        $user->account->update([
+            'phone'   => $request->filled('phone')   ? $request->phone   : $user->account->phone,
+            'gender'  => $request->filled('gender')  ? $request->gender  : $user->account->gender,
+            'address' => $request->filled('address') ? $request->address : $user->account->address,
+        ]);
+
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Record updated successfully',
+        ]);
+    }
+
+    public function updatePassword(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::findOrFail($id);
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Password updated successfully',
         ]);
     }
 }

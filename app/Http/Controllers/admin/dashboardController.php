@@ -11,10 +11,10 @@ class dashboardController extends Controller
 {
     public function index()
     {
-        $totalUsers = User::count();
-        $pendingUsers = User::where('status', 'pending')->count();
-        $activeUsers = User::where('status', 'active')->count();
-        $blockedUsers = User::where('status', 'blocked')->count();
+        $totalUsers = User::where('role', 'user')->count();
+        $pendingUsers = User::where('role', 'user')->where('status', 'pending')->count();
+        $activeUsers = User::where('role', 'user')->where('status', 'active')->count();
+        $blockedUsers = User::where('role', 'user')->where('status', 'blocked')->count();
         $totalTransactions = Transaction::count();
         $pendingTransactions = Transaction::where('status', 'pending')->count();
         $completedTransactions = Transaction::where('status', 'completed')->count();

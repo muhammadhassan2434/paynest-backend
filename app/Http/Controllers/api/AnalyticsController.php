@@ -110,8 +110,15 @@ class AnalyticsController extends Controller
             ->orderBy('income', 'desc')
             ->get();
 
-        $bestWeek = $weeklyStats->first();
-        $worstWeek = $weeklyStats->count() > 1 ? $weeklyStats->last() : $bestWeek;
+        $bestWeek = $weeklyStats->first() ?? (object)[
+            'week' => null,
+            'income' => 0
+        ];
+
+        $worstWeek = $weeklyStats->count() > 1
+            ? $weeklyStats->last()
+            : $bestWeek;
+
 
         // Average of transactions (both sent & received)
         $averageValue = DB::table('transactions')
@@ -205,5 +212,4 @@ class AnalyticsController extends Controller
             ]
         ]);
     }
-    
 }

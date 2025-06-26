@@ -17,9 +17,7 @@ class AnalyticsController extends Controller
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
 
-        $account = Account::where('user_id', $id)->first();
-        $authId = $account->user_id;
-        $authAccountNumber = $account->phone;
+        $account = Account::where('user_id', $id)->firstOrFail();
 
         // Daily aggregation
         $transactions = DB::table('transactions')
@@ -28,60 +26,37 @@ class AnalyticsController extends Controller
             DATE(created_at) as day,
             SUM(CASE WHEN sender_id = ? THEN amount ELSE 0 END) as expense,
             SUM(CASE WHEN reciever_number = ? THEN amount ELSE 0 END) as income
-        ", [$authId, $authAccountNumber])
+        ", [$account->user_id, $account->phone])
             ->groupBy(DB::raw('DATE(created_at)'))
             ->orderBy('day')
             ->get();
 
-        // Weekly aggregation
+        // Weekly aggregation with fallback
         $weeklyStats = DB::table('transactions')
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->where('reciever_number', $account->phone)
             ->selectRaw("
-            WEEK(created_at) as week,
-            SUM(CASE WHEN reciever_number = ? THEN amount ELSE 0 END) as income
-        ", [$authAccountNumber])
-            ->groupBy(DB::raw('WEEK(created_at)'))
-            ->orderBy('income', 'desc')
+            WEEK(created_at, 1) as week,
+            SUM(amount) as income
+        ")
+            ->groupBy(DB::raw('WEEK(created_at, 1)'))
             ->get();
 
-        $bestWeek = $weeklyStats->first() ?? (object)[
-            'week' => null,
-            'income' => 0
-        ];
-
-        $worstWeek = $weeklyStats->count() > 1
-            ? $weeklyStats->last()
-            : $bestWeek;
-
-
-        // Average of relevant transactions (sent or received)
-        $averageValue = DB::table('transactions')
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->where(function ($query) use ($authId, $authAccountNumber) {
-                $query->where('sender_id', $authId)
-                    ->orWhere('reciever_number', $authAccountNumber);
-            })
-            ->avg('amount');
-
-        // Count of transactions relevant to user
-        $transactionCount = DB::table('transactions')
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->where(function ($query) use ($authId, $authAccountNumber) {
-                $query->where('sender_id', $authId)
-                    ->orWhere('reciever_number', $authAccountNumber);
-            })
-            ->count();
+        // Handle empty weekly data
+        $bestWeek = $weeklyStats->sortByDesc('income')->first();
+        $worstWeek = $weeklyStats->sortBy('income')->first();
 
         return response()->json([
             'daily' => $transactions,
             'summary' => [
-                'best_week' => $bestWeek,
-                'worst_week' => $worstWeek,
-                'average_value' => round($averageValue, 2),
-                'transactions' => $transactionCount,
+                'best_week' => $bestWeek ?? (object)['week' => null, 'income' => '0'],
+                'worst_week' => $worstWeek ?? (object)['week' => null, 'income' => '0'],
+                'average_value' => $transactions->avg('income') ?? 0,
+                'transactions' => $transactions->count(),
             ]
         ]);
     }
+
     public function quarterly($id)
     {
         // Get current date and calculate quarter range

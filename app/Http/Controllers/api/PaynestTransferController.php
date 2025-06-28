@@ -124,6 +124,10 @@ class PaynestTransferController extends Controller
             'message' => $validator->errors()
         ]);
     }
+    $originalNumber = $request->reciever_number;
+    
+        // Sanitize number: Remove +92 or leading 0
+        $sanitizedRecieverNumber = preg_replace('/^(\+92|0)/', '', $originalNumber);
 
     $reference = 'paynest' . strtoupper(uniqid()) . rand(1000, 9999);
 
@@ -147,7 +151,7 @@ class PaynestTransferController extends Controller
         }
 
         // Find receiver
-        $receiver = Account::where('phone', $request->reciever_number)->first();
+        $receiver = Account::where('phone', $sanitizedRecieverNumber)->first();
         if (!$receiver) {
             return response()->json(['status' => false, 'message' => 'Receiver account not found']);
         }
@@ -155,7 +159,7 @@ class PaynestTransferController extends Controller
         // Create transaction record
         $transaction = new Transaction();
         $transaction->sender_id = $request->sender_id;
-        $transaction->reciever_number = $request->reciever_number;
+        $transaction->reciever_number = $sanitizedRecieverNumber;
         $transaction->amount = $request->amount;
         $transaction->transaction_type  = 'paynest';
         $transaction->status = 'completed';
@@ -180,7 +184,7 @@ class PaynestTransferController extends Controller
             'amount' => $request->amount,
             'reciver_name' => $receiver->first_name,
             'reciver_lastname' => $receiver->last_name,
-            'receiver_number' => $request->reciever_number,
+            'receiver_number' => $sanitizedRecieverNumber,
         ]);
     } catch (\Exception $e) {
         DB::rollBack();

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\AdvertisementController;
 use App\Http\Controllers\api\AccountCreationController;
 use App\Http\Controllers\api\AnalyticsController;
 use App\Http\Controllers\api\BillPaymentController;
@@ -21,6 +22,8 @@ Route::post('verify/otp', [AccountCreationController::class, 'verifyOtp']);
 Route::post('account/register', [AccountCreationController::class, 'accountRegister']);
 Route::post('verify/phone/otp/{id}', [AccountCreationController::class, 'verifyPhoneOtp']);
 Route::post('user/login', [AccountCreationController::class, 'Userlogin'])->name('login');
+
+Route::get('get/advertisements', [AdvertisementController::class, 'getAdvertisement']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('account/info/{id}', [AccountCreationController::class, 'accountInfo']);

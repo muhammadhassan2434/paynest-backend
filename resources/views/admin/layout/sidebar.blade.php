@@ -2,27 +2,36 @@
     <div class="dlabnav-scroll">
         <ul class="metismenu" id="menu">
             <li class="nav-label first">Main Menu</li>
-            <li><a  href="{{route('dashboard.index')}}" aria-expanded="false">
+            <li><a href="{{ route('dashboard.index') }}" aria-expanded="false">
                     <i class="la la-home"></i>
                     <span class="nav-text">Dashboard</span>
                 </a>
             </li>
-        <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">
-            <i class="la la-calendar"></i>
+            <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">
+                    <i class="la la-calendar"></i>
                     <span class="nav-text">Services</span>
                 </a>
                 <ul aria-expanded="false">
-                    <li><a href="{{route('services.index')}}">All Services</a></li>
-                    <li><a href="{{route('services.create')}}">Add Service</a></li>
+                    <li><a href="{{ route('services.index') }}">All Services</a></li>
+                    <li><a href="{{ route('services.create') }}">Add Service</a></li>
                 </ul>
             </li>
-        <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">
-            <i class="la la-calendar"></i>
+            <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">
+                    <i class="la la-calendar"></i>
                     <span class="nav-text">Service Providers</span>
                 </a>
                 <ul aria-expanded="false">
-                    <li><a href="{{route('provider.index')}}">All Service Providers</a></li>
-                    <li><a href="{{route('provider.create')}}">Add Service Provider</a></li>
+                    <li><a href="{{ route('provider.index') }}">All Service Providers</a></li>
+                    <li><a href="{{ route('provider.create') }}">Add Service Provider</a></li>
+                </ul>
+            </li>
+            <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">
+                    <i class="la la-calendar"></i>
+                    <span class="nav-text">Advertisements</span>
+                </a>
+                <ul aria-expanded="false">
+                    <li><a href="{{ route('advertisements.index') }}">All Advertisements List</a></li>
+                    <li><a href="{{ route('advertisements.create') }}">Add Advertisement</a></li>
                 </ul>
             </li>
             {{-- <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">

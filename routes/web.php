@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\AdvertisementController;
 use App\Http\Controllers\admin\Authcontroller;
 use App\Http\Controllers\admin\dashboardController;
 use App\Http\Controllers\admin\ServiceController;
@@ -27,6 +28,14 @@ Route::middleware(AdminAuthMiddleware::class)->group(function () {
 
     // service providers routes
     Route::resource('service/provider', ServiceProviderController::class);
+
+    // advertisement routes
+    Route::get('advertisements/index',[AdvertisementController::class, 'index'])->name('advertisements.index');
+    Route::get('advertisements/create',[AdvertisementController::class, 'create'])->name('advertisements.create');
+    Route::post('advertisements/store',[AdvertisementController::class, 'store'])->name('advertisements.store');
+    Route::get('advertisements/edit/{id}',[AdvertisementController::class, 'edit'])->name('advertisements.edit');
+    Route::put('advertisements/update/{id}',[AdvertisementController::class, 'update'])->name('advertisements.update');
+    Route::delete('advertisements/delete/{id}',[AdvertisementController::class, 'destroy'])->name('advertisements.destroy');
 });
 Route::get('/clear-cache', function() {
     Artisan::call('cache:clear');
